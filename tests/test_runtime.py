@@ -41,9 +41,9 @@ def test_entry_point_registered():
 
 
 def test_adapter_constructs_with_dynamic_platform():
-    from gateway.config import PlatformConfig, Platform
+    from gateway.config import PlatformConfig
 
-    config = PlatformConfig(platform=Platform("twilio_whatsapp"), enabled=True)
+    config = PlatformConfig(enabled=True)
     a = adapter_mod.TwilioWhatsAppAdapter(config)
     assert a.MAX_MESSAGE_LENGTH == 1600
     assert a._from_number == "+14155238886"
@@ -57,11 +57,11 @@ async def test_webhook_rejects_unsigned_post():
     """Real aiohttp server, real HTTP request, no mocks: an unsigned POST
     must get a 403 when a webhook URL is configured."""
     import aiohttp
-    from gateway.config import PlatformConfig, Platform
+    from gateway.config import PlatformConfig
 
     os.environ["TWILIO_WHATSAPP_WEBHOOK_PORT"] = "18099"
     os.environ["TWILIO_WHATSAPP_WEBHOOK_HOST"] = "127.0.0.1"
-    config = PlatformConfig(platform=Platform("twilio_whatsapp"), enabled=True)
+    config = PlatformConfig(enabled=True)
     a = adapter_mod.TwilioWhatsAppAdapter(config)
     assert await a.connect() is True
     try:
