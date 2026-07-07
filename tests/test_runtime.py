@@ -46,7 +46,8 @@ def test_adapter_constructs_with_dynamic_platform():
     config = PlatformConfig(enabled=True)
     a = adapter_mod.TwilioWhatsAppAdapter(config)
     assert a.MAX_MESSAGE_LENGTH == 1600
-    assert a._from_number == "+14155238886"
+    expected = os.environ["TWILIO_WHATSAPP_NUMBER"].removeprefix("whatsapp:")
+    assert a._from_number == expected
 
 
 def test_check_requirements_true_with_env():
