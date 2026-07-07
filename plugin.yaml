@@ -1,0 +1,36 @@
+# Optional manifest — only feeds the interactive `hermes config` setup UI.
+# On the pip entry-point install path all runtime metadata comes from
+# register() kwargs in adapter.py.
+name: twilio-whatsapp-platform
+label: WhatsApp (Twilio)
+kind: platform
+description: >
+  WhatsApp channel via the Twilio Business API. Shares Twilio account
+  credentials with the built-in SMS adapter; runs an aiohttp webhook server
+  for inbound messages (Twilio-signed) and sends via the Twilio REST API.
+  Full media support both directions; 1600-char chunking.
+requires_env:
+  - name: TWILIO_ACCOUNT_SID
+    description: Twilio account SID (shared with the SMS adapter)
+  - name: TWILIO_AUTH_TOKEN
+    description: Twilio auth token (shared with the SMS adapter)
+    secret: true
+  - name: TWILIO_WHATSAPP_NUMBER
+    description: "E.164 WhatsApp sender number (e.g. +14155238886 for the sandbox)"
+  - name: TWILIO_WHATSAPP_WEBHOOK_URL
+    description: Public URL Twilio POSTs to (required for signature validation)
+optional_env:
+  - name: TWILIO_WHATSAPP_ALLOWED_USERS
+    description: Comma-separated E.164 numbers allowed to message the agent
+  - name: TWILIO_WHATSAPP_ALLOW_ALL_USERS
+    description: Set true to disable the allowlist (NOT recommended)
+  - name: TWILIO_WHATSAPP_WEBHOOK_HOST
+    description: Webhook bind host (default 0.0.0.0)
+  - name: TWILIO_WHATSAPP_WEBHOOK_PORT
+    description: Webhook bind port (default 8080)
+  - name: TWILIO_WHATSAPP_HOME_CHANNEL
+    description: E.164 number for cron/home-channel delivery
+  - name: TWILIO_WHATSAPP_INSECURE_NO_SIGNATURE
+    description: Set true to skip Twilio signature validation (dev only)
+  - name: TWILIO_WHATSAPP_OUTBOUND_MEDIA_DIR
+    description: Override the outbound media staging directory

@@ -1,0 +1,37 @@
+[project]
+name = "twilio-whatsapp-platform-adapter"
+version = "0.1.0"
+description = "WhatsApp (Twilio Business API) platform adapter plugin for Hermes Agent"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [{ name = "Srinath Hariharan" }]
+dependencies = [
+  "aiohttp>=3.9",
+]
+
+[project.entry-points."hermes_agent.plugins"]
+# Hermes strips the trailing "-platform" to derive the platform id
+# ("twilio_whatsapp"), which must match register_platform(name=...).
+twilio_whatsapp-platform = "twilio_whatsapp_platform_adapter.adapter"
+
+[project.optional-dependencies]
+test = [
+  "pytest>=8",
+  "pytest-asyncio>=0.23",
+  "PyYAML>=6",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["twilio_whatsapp_platform_adapter"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+markers = [
+  "live: requires live Twilio credentials and sends a real WhatsApp message",
+]
