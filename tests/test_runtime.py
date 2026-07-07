@@ -20,6 +20,12 @@ os.environ.setdefault(
     "https://hermes.example.com/webhooks/twilio-whatsapp",
 )
 
+# The dynamic Platform("twilio_whatsapp") pseudo-member only exists once the
+# plugin registry has registered the platform — same as a real gateway boot.
+from hermes_cli.plugins import discover_plugins  # noqa: E402
+
+discover_plugins()
+
 from twilio_whatsapp_platform_adapter import adapter as adapter_mod  # noqa: E402
 
 
