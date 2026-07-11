@@ -84,3 +84,53 @@ async def test_webhook_rejects_unsigned_post():
                 assert resp.status == 404
     finally:
         await a.disconnect()
+
+
+async def test_inbound_media_download_is_not_truncated():
+    """Regression for the aiohttp StreamReader short-read bug: a body that
+    arrives in several chunks must be downloaded whole, not clipped to the
+    first buffered chunk. No mocks — a real local aiohttp server streams a
+    known multi-chunk payload and we assert the cached file matches it exactly.
+    """
+    import os as _os
+
+    import aiohttp
+    from aiohttp import web
+    from gateway.config import PlatformConfig
+
+    # 256 KiB of deterministic bytes, served in explicit 8 KiB writes so the
+    # response body spans many chunks (the condition that triggered the bug).
+    payload = bytes(i % 251 for i in range(256 * 1024))
+
+    async def _serve(request):
+        resp = web.StreamResponse(
+            status=200, headers={"Content-Type": "image/jpeg"}
+        )
+        await resp.prepare(request)
+        for off in range(0, len(payload), 8192):
+            await resp.write(payload[off : off + 8192])
+        await resp.write_eof()
+        return resp
+
+    app = web.Application()
+    app.router.add_get("/media.jpg", _serve)
+    runner = web.AppRunner(app)
+    await runner.setup()
+    site = web.TCPSite(runner, "127.0.0.1", 18100)
+    await site.start()
+
+    try:
+        config = PlatformConfig(enabled=True)
+        a = adapter_mod.TwilioWhatsAppAdapter(config)
+        paths, types = await a._download_inbound_media(
+            [("http://127.0.0.1:18100/media.jpg", "image/jpeg")]
+        )
+        assert types == ["image"]
+        assert len(paths) == 1
+        with open(paths[0], "rb") as fh:
+            got = fh.read()
+        assert len(got) == len(payload)
+        assert got == payload
+        _os.unlink(paths[0])
+    finally:
+        await runner.cleanup()

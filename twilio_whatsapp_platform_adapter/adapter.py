@@ -413,13 +413,22 @@ class TwilioWhatsAppAdapter(BasePlatformAdapter):
                                 url[:120], content_type,
                             )
                             continue
-                        data = await resp.content.read(_MEDIA_DOWNLOAD_MAX_BYTES + 1)
-                        if len(data) > _MEDIA_DOWNLOAD_MAX_BYTES:
+                        # aiohttp's StreamReader.read(n) short-reads (returns
+                        # only the currently-buffered chunk), so accumulate the
+                        # full body via iter_chunked, stopping once we exceed
+                        # the cap.
+                        buf = bytearray()
+                        async for chunk in resp.content.iter_chunked(64 * 1024):
+                            buf.extend(chunk)
+                            if len(buf) > _MEDIA_DOWNLOAD_MAX_BYTES:
+                                break
+                        if len(buf) > _MEDIA_DOWNLOAD_MAX_BYTES:
                             logger.warning(
                                 "[twilio_whatsapp] media %s exceeds %d bytes, skipping",
                                 url[:120], _MEDIA_DOWNLOAD_MAX_BYTES,
                             )
                             continue
+                        data = bytes(buf)
                         ext = mimetypes.guess_extension(content_type) or ".bin"
                         if content_type.startswith("image/"):
                             paths.append(cache_image_from_bytes(data, ext=ext))

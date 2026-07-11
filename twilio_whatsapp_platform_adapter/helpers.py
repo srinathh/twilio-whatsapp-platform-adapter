@@ -18,7 +18,7 @@ DEFAULT_WEBHOOK_PORT = 8080
 DEFAULT_WEBHOOK_HOST = "0.0.0.0"  # the Cloudflare Tunnel connects east-west
 WEBHOOK_PATH = "/webhooks/twilio-whatsapp"
 _TWILIO_WEBHOOK_MAX_BODY_BYTES = 65_536  # 64 KiB — Twilio payloads are small
-_MEDIA_DOWNLOAD_MAX_BYTES = 5 * 1024 * 1024
+_MEDIA_DOWNLOAD_MAX_BYTES = 16 * 1024 * 1024  # Twilio WhatsApp media limit
 _MEDIA_MAX_PER_MESSAGE = 10  # Twilio caps MediaUrl at 10 per message
 
 _ALLOWED_INBOUND_CONTENT_TYPES = frozenset({
